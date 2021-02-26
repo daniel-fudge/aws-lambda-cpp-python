@@ -31,5 +31,6 @@
 *.out
 *.app
 /third-party/
-/cmake-build*/
+/*build*/
 /test/lib/googletest/
+/test/scratch/
