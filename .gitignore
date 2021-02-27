@@ -30,7 +30,8 @@
 *.exe
 *.out
 *.app
-/third-party/
 /*build*/
+/package/
 /test/lib/googletest/
 /test/scratch/
+/third-party/

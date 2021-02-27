@@ -9,7 +9,8 @@ set(CMAKE_USE_PTHREADS_INIT 1)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 set(BUILD_SHARED_LIBS OFF)
-set(CMAKE_CXX_STANDARD 14)
+# set(CMAKE_EXE_LINKER_FLAGS "-static")
+set(CMAKE_CXX_STANDARD 11)
 set(BINARY ${CMAKE_PROJECT_NAME})
 set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "disable yaml tests")
 set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "disable yaml tools")
@@ -19,6 +20,7 @@ set(CLOUD9 ON)
 if(${CLOUD9})
   # Add the AWS SDK package if building on Cloud9
   find_package(AWSSDK REQUIRED COMPONENTS s3)
+  include_directories("~/install/include")
 else()
   # Add the test directory if developing locally with full GoogleTest integration
   add_subdirectory(test)

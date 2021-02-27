@@ -5,12 +5,23 @@
 #include "main.h"
 
 int main(int argc, char **argv){
-    string input_name = "input.yml";
+    
+    if (argc != 4) {
+        std::cout << "Require 3 arguments; bucket, object, region." << std::endl;
+        return 1;
+    }
+    const std::string bucket_name = argv[1];
+    const std::string object_name = argv[2];
+    const std::string region_name = argv[3];
 
-    YAML::Node input = YAML::LoadFile(input_name);
-
-    string greeting = input["greeting"].as<string>();
-    cout << greeting << endl;
-
+    YAML::Node input;
+    
+    if (!S3::ReadYaml(object_name, bucket_name, region_name, input)){
+        std::cout << "Yaml file parsing failed." << std::endl;
+        return 2;    
+    } 
+    
+    std::string greeting = input["greeting"].as<std::string>();
+    std::cout << greeting << std::endl;
     return 0;
 }
