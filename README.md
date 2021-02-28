@@ -12,7 +12,7 @@ The remainder of these steps assume you have chosen the Cloud9 environment.
 Note the AWS Linux 2 AMI uses `yum` instead of `apt-get`. The version of CMake is also very old so we need to manually 
 download a new version and install.
 
-```bash
+```shell
 cd ~
 sudo yum update -y
 sudo yum install libcurl-devel -y
@@ -32,7 +32,7 @@ for more involved Lambda functions.
 Because we are using the `s3` package, which requires more memory to build the `t2.mirco` will not be sufficient. 
 I used a `t2.medium`. You can change the instance type back to a `t2.micro` after the SDK is built.
 
-```bash
+```shell
 mkdir ~/install
 cd ~/environment
 git clone https://github.com/aws/aws-sdk-cpp.git
@@ -55,7 +55,7 @@ This simple C++ application reads a YAML file with a 3rd party package. To setup
 2. Place repo in `third-party` sub-folder
 Make sure following lines are in [CMakeLists.txt](CMakeLists.txt)
 
-```bash
+```shell
 set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "disable yaml tests")
 set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "disable yaml tools")
 set(YAML_CPP_BUILD_CONTRIB OFF CACHE BOOL "disable yaml contrib")
@@ -69,7 +69,7 @@ full GoogleTest integration. Therefore in the top [CMakeLists](CMakeLists.txt) f
 `ON` or `OFF`. This controls if the SDK is included or GoogleTest along with any other dependencies.
 
 ## Build the Actual C++ Lambda Function
-```bash
+```shell
 git clone git@github.com:daniel-fudge/aws-lambda-cpp-python.git
 cd ~/environment/aws-lambda-cpp-python
 mkdir build
@@ -83,7 +83,7 @@ make aws-lambda-package-demo
 We need to create and IAM role that the can be attached to the lambda function when it is deployed. 
 Note the rights in this role may need to be expanded for more complex Lambda functions.  
 First create a JSON file that defines the required permissions as shown below.
-```JSON
+```json
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -96,7 +96,7 @@ First create a JSON file that defines the required permissions as shown below.
 }
 ```
 Then create the IAM role in the CLI as shown below.
-```bash
+```shell
 aws iam create-role --role-name lambda-demo --assume-role-policy-document file://trust-policy.json
 ```
 The output of the above command will include the ARN of the new role. You must copy this ARN. It will be required when 
@@ -105,14 +105,14 @@ you deploy the Lambda function. It will most like have the form `arn:aws:iam::<y
 Next attached the `AWSLambdaBasicExecutionRole` and `AmazonS3FullAccess` policies to the new role to allow the Lambda 
 function to write to CloudWatch Logs and access the S3 bucket. This is performed with the following CLI commands.
 
-```bash 
+```shell
 aws iam attach-role-policy --role-name lambda-demo --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
 aws iam attach-role-policy --role-name lambda-demo --policy-arn arn:aws:iam::aws:policy/service-role/AmazonS3FullAccess
 ```
 
 ## Zip and Deploy the Lambda Function 
 We can now deploy the lambda function with the following CLI command.
-```bash
+```shell
 cd ~/environment/aws-lambda-cpp-python
 mkdir package
 cd package
@@ -141,19 +141,26 @@ rm -fr package
 ```
 
 It may also be useful to update the package through the CLI with the following command.
-```bash
+```shell
 aws lambda update-function-code --function-name  demo-cpp-python --zip-file fileb://package.zip
 ```
 
 ## Create the S3 Trigger
-From the above command or the Lambda console you will need the Lambda function ARN. This will replace the `lambda-arn` 
-in the following json file.
+From the above command or the Lambda console you will need the Lambda function ARN. This will replace the Lambda ARN 
+in the `s3-trigger.json` file.
 
-First we add a resource policy to give s3 permission to invoke the lambda function. You will have to use a different S3 
+First we create a S3 bucket to use for the input. Note if the Lambda function writes to this bucket, you'll get into a 
+very expensive infinite loop. Bucket names are unique so you can't use the name shown in this demo.
+
+```shell
+aws s3api create-bucket --bucket your-bucket
+```
+
+Then we add a resource policy to give s3 permission to invoke the lambda function. You will have to use a different S3 
 ARN and account ID. See the [docs](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/add-permission.html) 
 for a full set of options.
 
-```bash
+```shell
 aws lambda add-permission \
   --function-name demo-cpp-python \
   --statement-id s3-trigger \
@@ -169,7 +176,7 @@ First we create the `s3-trigger.json` config file as shown below (replace the AR
 {
   "LambdaFunctionConfigurations": [
     {
-      "LambdaFunctionArn": "lambda-arn",
+      "LambdaFunctionArn": "your-lambda-arn",
       "Events": ["s3:ObjectCreated:*"]
     }
   ]
@@ -178,13 +185,14 @@ First we create the `s3-trigger.json` config file as shown below (replace the AR
 This configuration is then added to the S3 bucket with the following command. Note that you will have to change your 
 bucket name.
 
-```bash
-aws s3api put-bucket-notification-configuration --bucket lambda-cpp-test  --notification-configuration file://s3-trigger.json
+```shell
+aws s3api put-bucket-notification-configuration --bucket your-bucket \ 
+  --notification-configuration file://s3-trigger.json
 ```
 
 ## Test the S3 upload and Lambda trigger
-```bash
-aws s3 cp test.yml s3://lambda-cpp-test
+```shell
+aws s3 cp test.yml s3://your-bucket
 ```
 
 ## References
