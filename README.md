@@ -9,7 +9,9 @@ review the local C++ setup [here](https://github.com/daniel-fudge/aws-lambda-cpp
 The remainder of these steps assume you have chosen the Cloud9 environment.
 
 ## Install Some Dependencies
-Note the AWS Linux 2 AMI uses `yum` instead of `apt-get`. The version of CMake is also very old so we need to manually download a new version and install.
+Note the AWS Linux 2 AMI uses `yum` instead of `apt-get`. The version of CMake is also very old so we need to manually 
+download a new version and install.
+
 ```bash
 cd ~
 sudo yum update -y
@@ -23,11 +25,12 @@ sudo make install
 ```
 
 ## Build the AWS C++ SDK
-These steps install the C++ SDK into the `~/install` directory and clones all the directories into `~/environment`. This can obviously be altered if desired.    
-We are also only installing the `s3` package. Other packages may be required for more involved Lambda functions. 
+These steps install the C++ SDK into the `~/install` directory and clones all the directories into `~/environment`. 
+This can obviously be altered if desired. We are also only installing the `s3` package. Other packages may be required 
+for more involved Lambda functions. 
 
-Because we are using the `s3` package, which requires more memory to build the `t2.mirco` will not be sufficient. I used a `t2.medium`. 
-You can change the instance type back to a `t2.micro` after the SDK is built.
+Because we are using the `s3` package, which requires more memory to build the `t2.mirco` will not be sufficient. 
+I used a `t2.medium`. You can change the instance type back to a `t2.micro` after the SDK is built.
 
 ```bash
 mkdir ~/install
@@ -61,9 +64,9 @@ add_subdirectory(third-party/yaml-cpp/ yaml-cpp)
 ```
 
 ## Local vs Cloud9 development
-The Cloud9 enviroment is great for testing the AWS integration but it isn't as rich as a local IDE such as CLION with full GoogleTest integration.
-Therefore in the top [CMakeLists](CMakeLists.txt) file toggle the `set(CLOUD9 ON)` line to `ON` or `OFF`. This control if the SDK is included or
-GoogleTest along with any other dependencies.
+The Cloud9 environment is great for testing the AWS integration but it isn't as rich as a local IDE such as CLION with 
+full GoogleTest integration. Therefore in the top [CMakeLists](CMakeLists.txt) file toggle the `set(CLOUD9 ON)` line to 
+`ON` or `OFF`. This controls if the SDK is included or GoogleTest along with any other dependencies.
 
 ## Build the Actual C++ Lambda Function
 ```bash
@@ -96,11 +99,12 @@ Then create the IAM role in the CLI as shown below.
 ```bash
 aws iam create-role --role-name lambda-demo --assume-role-policy-document file://trust-policy.json
 ```
-The output of the above command will include the ARN of the new role. You must copy this ARN. It will be required when you deploy the Lambda function. 
-It will most like have the form `arn:aws:iam::<your AWS account number>:role/lambda-demo`.   
+The output of the above command will include the ARN of the new role. You must copy this ARN. It will be required when 
+you deploy the Lambda function. It will most like have the form `arn:aws:iam::<your account number>:role/lambda-demo`.   
 
-Next attached the `AWSLambdaBasicExecutionRole` and `AmazonS3FullAccess` policies to the new role to allow the Lambda function to write to CloudWatch Logs and access the S3 bucket. 
-This is performed with the following CLI commands.
+Next attached the `AWSLambdaBasicExecutionRole` and `AmazonS3FullAccess` policies to the new role to allow the Lambda 
+function to write to CloudWatch Logs and access the S3 bucket. This is performed with the following CLI commands.
+
 ```bash 
 aws iam attach-role-policy --role-name lambda-demo --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
 aws iam attach-role-policy --role-name lambda-demo --policy-arn arn:aws:iam::aws:policy/service-role/AmazonS3FullAccess
@@ -136,16 +140,19 @@ cd ..
 rm -fr package
 ```
 
-It may also be useful to update the package through the CLI with the followig command.
+It may also be useful to update the package through the CLI with the following command.
 ```bash
 aws lambda update-function-code --function-name  demo-cpp-python --zip-file fileb://package.zip
 ```
 
 ## Create the S3 Trigger
-From the above command or the Lambda console you will need the Lambda function ARN. This will replace the `lambda-arn` in the following json file.
+From the above command or the Lambda console you will need the Lambda function ARN. This will replace the `lambda-arn` 
+in the following json file.
 
-First we add a resource policy to give s3 permission to invoke the lambda function. You will have to use a different S3 ARN and account ID. 
-See the [docs](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/add-permission.html) for a full set of options.
+First we add a resource policy to give s3 permission to invoke the lambda function. You will have to use a different S3 
+ARN and account ID. See the [docs](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/add-permission.html) 
+for a full set of options.
+
 ```bash
 aws lambda add-permission \
   --function-name demo-cpp-python \
@@ -156,7 +163,7 @@ aws lambda add-permission \
   --source-account "your-acc-id"
 ```
 
-To add the trigger we actually add an event configuration to the S3 bucket, which triggers the Lambda function added above.  
+To add the trigger we add an event configuration to the S3 bucket, which triggers the Lambda function added above.  
 First we create the `s3-trigger.json` config file as shown below (replace the ARN).
 ```json
 {
@@ -168,7 +175,9 @@ First we create the `s3-trigger.json` config file as shown below (replace the AR
   ]
 }
 ```
-This configuration is then added to the S3 buccket with the following command. Note that you will have to change your bucket name.
+This configuration is then added to the S3 bucket with the following command. Note that you will have to change your 
+bucket name.
+
 ```bash
 aws s3api put-bucket-notification-configuration --bucket lambda-cpp-test  --notification-configuration file://s3-trigger.json
 ```
