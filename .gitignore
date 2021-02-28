@@ -35,3 +35,4 @@
 /test/lib/googletest/
 /test/scratch/
 /third-party/
+*.json
