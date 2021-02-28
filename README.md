@@ -49,35 +49,25 @@ make
 make install
 ```
 
-## YAML-Cpp Setup
-This simple C++ application reads a YAML file with a 3rd party package. To setup the package use the following steps.
-1. Clone the YAML-CPP repo from [here](https://github.com/jbeder/yaml-cpp.git).
-2. Place repo in `third-party` sub-folder
-Make sure following lines are in [CMakeLists.txt](CMakeLists.txt)
-
-```shell
-set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "disable yaml tests")
-set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "disable yaml tools")
-set(YAML_CPP_BUILD_CONTRIB OFF CACHE BOOL "disable yaml contrib")
-include_directories(third-party/yaml-cpp/include)
-add_subdirectory(third-party/yaml-cpp/ yaml-cpp)
-```
-
-## Local vs Cloud9 development
-The Cloud9 environment is great for testing the AWS integration but it isn't as rich as a local IDE such as CLION with 
-full GoogleTest integration. Therefore in the top [CMakeLists](CMakeLists.txt) file toggle the `set(CLOUD9 ON)` line to 
-`ON` or `OFF`. This controls if the SDK is included or GoogleTest along with any other dependencies.
-
 ## Build the Actual C++ Lambda Function
 ```shell
-git clone git@github.com:daniel-fudge/aws-lambda-cpp-python.git
-cd ~/environment/aws-lambda-cpp-python
+cd ~/environment/
+git clone https://github.com/daniel-fudge/aws-lambda-cpp-python.git
+cd aws-lambda-cpp-python
+mkdir third-party
+cd third-party
+git clone https://github.com/jbeder/yaml-cpp.git
+cd ..
 mkdir build
 cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=~/install
 make
-make aws-lambda-package-demo
 ```
+
+## Local vs Cloud9 development
+The Cloud9 environment is great for testing the AWS integration but it isn't as rich as a local IDE such as CLION with
+full GoogleTest integration. Therefore in the top [CMakeLists](CMakeLists.txt) file toggle the `set(CLOUD9 ON)` line to
+`ON` or `OFF`. This controls if the SDK is included or GoogleTest along with any other dependencies.
 
 ## Make IAM Role for the Lambda Function
 We need to create and IAM role that the can be attached to the lambda function when it is deployed. 
@@ -95,19 +85,23 @@ First create a JSON file that defines the required permissions as shown below.
   ]
 }
 ```
-Then create the IAM role in the CLI as shown below.
+Then create the IAM role in the CLI as shown below. Note I couldn't get this to work on Cloud9 even after running aws 
+configure. Please let me know if you know why.
+
 ```shell
 aws iam create-role --role-name lambda-demo --assume-role-policy-document file://trust-policy.json
 ```
+
 The output of the above command will include the ARN of the new role. You must copy this ARN. It will be required when 
-you deploy the Lambda function. It will most like have the form `arn:aws:iam::<your account number>:role/lambda-demo`.   
+you deploy the Lambda function. It will most like have the form   
+`arn:aws:iam::<your account number>:role/lambda-demo`.   
 
 Next attached the `AWSLambdaBasicExecutionRole` and `AmazonS3FullAccess` policies to the new role to allow the Lambda 
 function to write to CloudWatch Logs and access the S3 bucket. This is performed with the following CLI commands.
 
 ```shell
 aws iam attach-role-policy --role-name lambda-demo --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-aws iam attach-role-policy --role-name lambda-demo --policy-arn arn:aws:iam::aws:policy/service-role/AmazonS3FullAccess
+aws iam attach-role-policy --role-name lambda-demo --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
 ```
 
 ## Zip and Deploy the Lambda Function 
