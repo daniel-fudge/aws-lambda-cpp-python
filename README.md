@@ -149,7 +149,7 @@ See the [docs](https://awscli.amazonaws.com/v2/documentation/api/latest/referenc
 ```bash
 aws lambda add-permission \
   --function-name demo-cpp-python \
-  --statement-id s3-trigger
+  --statement-id s3-trigger \
   --action "lambda:InvokeFunction" \
   --principal s3.amazonaws.com \
   --source-arn "arn:aws:s3:::your-bucket" \
@@ -171,6 +171,11 @@ First we create the `s3-trigger.json` config file as shown below (replace the AR
 This configuration is then added to the S3 buccket with the following command. Note that you will have to change your bucket name.
 ```bash
 aws s3api put-bucket-notification-configuration --bucket lambda-cpp-test  --notification-configuration file://s3-trigger.json
+```
+
+## Test the S3 upload and Lambda trigger
+```bash
+aws s3 cp test.yml s3://lambda-cpp-test
 ```
 
 ## References
