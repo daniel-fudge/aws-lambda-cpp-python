@@ -1,5 +1,6 @@
 # aws-lambda-cpp-python
-This repo builds an AWS Lambda function with a Python handler that calls a C++ executable. 
+This repo builds an AWS Lambda function with a Python handler that calls a C++ executable.   
+A video walk through of this repo can be found [here](https://youtu.be/rNzonrIjSms).
 
 ## Environment Selection
 In [this](https://youtu.be/olO5ORrq1cU) video we described the Cloud9 environment. The advantage of this environment is 
@@ -190,6 +191,7 @@ aws s3 cp test.yml s3://your-bucket
 ```
 
 ## References
+- [Repo walk through](https://youtu.be/rNzonrIjSms)
 - [Local C++ Lambda Repo](https://github.com/daniel-fudge/aws-lambda-cpp-local-build)
 - [Cloud9 C++ Lambda Repo](https://github.com/daniel-fudge/aws-lambda-cpp-cloud9)
 - [AWS CLI - Installation](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2-linux.html)
