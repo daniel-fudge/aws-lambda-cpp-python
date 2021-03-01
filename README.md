@@ -127,7 +127,7 @@ zip package.zip *
 aws lambda create-function \
   --function-name demo-cpp-python \
   --role arn:aws:iam::[your account id]:role/lambda-demo \
-  --runtime python3.8 --timeout 10 --memory-size 80 \
+  --runtime python3.8 --timeout 10 --memory-size 128 \
   --handler lambda_function.lambda_handler \
   --zip-file fileb://package.zip
 cd ..
